@@ -1,12 +1,13 @@
 #include "models.hpp"
+#include <math.h>       
 
 void make_tree(Tree* res, const std::vector<GLfloat>& tree, const std::vector<GLfloat>& tree_colors, 
 	           double turn_xy, double turn_xz, double scale, double bias_x, double bias_y, double bias_z)
 {
-	// Новое дерево
+	// ГЌГ®ГўГ®ГҐ Г¤ГҐГ°ГҐГўГ®
 	std::vector<GLfloat> tree_copy = tree;
 
-	// Поворот в плоскости X-Y
+	// ГЏГ®ГўГ®Г°Г®ГІ Гў ГЇГ«Г®Г±ГЄГ®Г±ГІГЁ X-Y
 	for (int i = 0; i < tree_copy.size(); i += 3) {
 		float a = tree_copy[i];
 		float b = tree_copy[i + 1];
@@ -14,7 +15,7 @@ void make_tree(Tree* res, const std::vector<GLfloat>& tree, const std::vector<GL
 		tree_copy[i + 1] = b * cos(turn_xy) + a * sin(turn_xy);
 	}
 
-	// Поворот в плоскости X-Z
+	// ГЏГ®ГўГ®Г°Г®ГІ Гў ГЇГ«Г®Г±ГЄГ®Г±ГІГЁ X-Z
 	for (int i = 0; i < tree_copy.size(); i += 3) {
 		float a = tree_copy[i];
 		float b = tree_copy[i + 2];
@@ -22,7 +23,7 @@ void make_tree(Tree* res, const std::vector<GLfloat>& tree, const std::vector<GL
 		tree_copy[i + 2] = b * cos(turn_xz) + a * sin(turn_xz);
 	}
 
-	// Смещение и масштабирование.
+	// Г‘Г¬ГҐГ№ГҐГ­ГЁГҐ ГЁ Г¬Г Г±ГёГІГ ГЎГЁГ°Г®ГўГ Г­ГЁГҐ.
 	for (int i = 0; i < tree_copy.size(); i += 3) {
 		tree_copy[i] = tree_copy[i] / scale + bias_x;
 		tree_copy[i + 1] = tree_copy[i + 1] / scale + bias_y;
@@ -55,7 +56,7 @@ void MakeSpruce::add_tree(Spruce* res)
 
 void MakeStump::add_tree(Stump* res, const Spruce& spruce)
 {
-	// Все параметры как у соответствующего дерева.
+	// Г‚Г±ГҐ ГЇГ Г°Г Г¬ГҐГІГ°Г» ГЄГ ГЄ Гі Г±Г®Г®ГІГўГҐГІГ±ГІГўГіГѕГ№ГҐГЈГ® Г¤ГҐГ°ГҐГўГ .
 	make_tree(res, stump, stump_colors, spruce.turn_xy, spruce.turn_xz, spruce.scale, spruce.bias_x, spruce.bias_y, spruce.bias_z);
 	res->birth = glfwGetTime();
 }
@@ -63,112 +64,104 @@ void MakeStump::add_tree(Stump* res, const Spruce& spruce)
 MakeFireboll::MakeFireboll()
 {
 	int N_PSI_part = N_PSI * 2 / 3;
-	boll.resize(2 * N_PSI_part * N_PHI * 9);
-	boll_colors.resize(2 * N_PSI_part * N_PHI * 9);
+	boll.resize(3 * 6 * N_PSI * N_PHI);
+	boll_colors.resize(3 * 6 * N_PSI * N_PHI);
+	uves.resize(2 * N_PSI * N_PHI * 6);
 
 	glm::vec3 vertices[N_PSI][N_PHI];
+
+	for (int j = 0; j < N_PSI; ++j) {
+		for (int i = 0; i < N_PHI; ++i) {
+			float phi = i * 2 * PI / (N_PHI - 1);
+			float psi = j * PI / (N_PSI - 1);
+			vertices[j][i] = glm::vec3(sin(psi) * cos(phi), sin(psi) * sin(phi), cos(psi));
+		}
+	}
+
+	//add u, v, poles are with z coordinate
+	glm::vec2 uv_coords[N_PSI][N_PHI];
 
 	for (int j = 1; j < N_PSI_part; ++j) {
 		for (int i = 0; i < N_PHI; ++i) {
 			float phi = i * 2 * PI / N_PHI;
 			float psi = j * PI / N_PSI;
-			vertices[j][i] = glm::vec3(sin(psi) * cos(phi), sin(psi) * sin(phi), cos(psi));
+
+			float u = phi / (2 * PI) + 0.5;
+			float v = psi / PI + 0.5;
+			uv_coords[j][i] = glm::vec2(u, v);
 		}
 	}
 
-	glm::vec3 north_pole = vec3(0., 0., 1.);
-	glm::vec3 south_pole = vec3(0., 0., -2);
-
 	int k = 0;
+	int n = 0;
 
-	//add triangles for south pole
-	for (int i = 0; i < N_PHI; ++i) {
-		boll[k++] = north_pole.x;
-		boll[k++] = north_pole.y;
-		boll[k++] = north_pole.z;
-		boll_colors[k - 2] = north_pole.z;
-
-		boll[k++] = vertices[1][i].x;
-		boll[k++] = vertices[1][i].y;
-		boll[k++] = vertices[1][i].z;
-		boll_colors[k - 2] = vertices[1][i].z;
-
-		boll[k++] = vertices[1][(i + 1) % N_PHI].x;
-		boll[k++] = vertices[1][(i + 1) % N_PHI].y;
-		boll[k++] = vertices[1][(i + 1) % N_PHI].z;
-		boll_colors[k - 2] = vertices[1][(i + 1) % N_PHI].z;
-	}
-
-	//add triangles for north pole
-	for (int i = 0; i < N_PHI; ++i) {
-		boll[k++] = south_pole.x;
-		boll[k++] = south_pole.y;
-		boll[k++] = south_pole.z;
-		boll_colors[k - 3] = 0.2;
-
-		boll[k++] = vertices[N_PSI_part - 1][i].x;
-		boll[k++] = vertices[N_PSI_part - 1][i].y;
-		boll[k++] = vertices[N_PSI_part - 1][i].z;
-		boll_colors[k - 2] = vertices[N_PSI_part - 1][i].z;
-
-
-		boll[k++] = vertices[N_PSI_part - 1][(i + 1) % N_PHI].x;
-		boll[k++] = vertices[N_PSI_part - 1][(i + 1) % N_PHI].y;
-		boll[k++] = vertices[N_PSI_part - 1][(i + 1) % N_PHI].z;
-		boll_colors[k - 2] = vertices[N_PSI_part - 1][(i + 1) % N_PHI].z;
-	}
-
-	//add all sphere triangles
-	for (int j = 1; j < N_PSI_part - 1; ++j) {
+	// add all sphere triangles
+	for (int j = 0; j < N_PSI - 1; ++j) {
 		for (int i = 0; i < N_PHI; ++i) {
+
 			boll[k++] = vertices[j][i].x;
 			boll[k++] = vertices[j][i].y;
 			boll[k++] = vertices[j][i].z;
-			boll_colors[k - 2] = vertices[j][i].z;
 
 			boll[k++] = vertices[j + 1][i].x;
 			boll[k++] = vertices[j + 1][i].y;
 			boll[k++] = vertices[j + 1][i].z;
-			boll_colors[k - 2] = vertices[j + 1][i].z;
 
 			boll[k++] = vertices[j + 1][(i + 1) % N_PHI].x;
 			boll[k++] = vertices[j + 1][(i + 1) % N_PHI].y;
 			boll[k++] = vertices[j + 1][(i + 1) % N_PHI].z;
-			boll_colors[k - 2] = vertices[j + 1][(i + 1) % N_PHI].z;
-
-			//////
 
 			boll[k++] = vertices[j][i].x;
 			boll[k++] = vertices[j][i].y;
 			boll[k++] = vertices[j][i].z;
-			boll_colors[k - 2] = vertices[j][i].z;
 
 			boll[k++] = vertices[j + 1][(i + 1) % N_PHI].x;
 			boll[k++] = vertices[j + 1][(i + 1) % N_PHI].y;
 			boll[k++] = vertices[j + 1][(i + 1) % N_PHI].z;
-			boll_colors[k - 2] = vertices[j + 1][(i + 1) % N_PHI].z;
 
 			boll[k++] = vertices[j][(i + 1) % N_PHI].x;
 			boll[k++] = vertices[j][(i + 1) % N_PHI].y;
 			boll[k++] = vertices[j][(i + 1) % N_PHI].z;
-			boll_colors[k - 2] = vertices[j][(i + 1) % N_PHI].z;
 		}
 	}
 
 	for (int i = 0; i < k; ++i) {
-		if (boll_colors[i] < 0)
-			boll_colors[i] = -boll_colors[i];
-	}
-
-	// Установка красного и синего цветов. Зелёный уже установлен на равномерное убывание от полюсов.
-	for (int i = 0; i < k; i += 3) {
-		boll_colors[i] = 1. - boll_colors[i]; // обычно до этого был 0.
-		//boll_colors[i + 2] = 0.;
+		boll_colors[i] = 0;
 	}
 
 	for (int i = 0; i < k; ++i) {
 		boll[i] /= scale;
 	}
+
+	// add texture  UV coordinates
+	for (int j = 0; j < N_PSI - 1; ++j) {
+		for (int i = 0; i < N_PHI; ++i) {
+			uves[n++] = (atan2(vertices[j][i].y, vertices[j][i].x) / (2 * PI) + 0.5);
+			uves[n++] = asin(vertices[j][i].z) / PI + 0.5;
+
+			uves[n++] = (atan2(vertices[j + 1][i].y, vertices[j + 1][i].x) / (2 * PI) + 0.5);
+			uves[n++] = asin(vertices[j + 1][i].z) / PI + 0.5;
+
+			uves[n++] = (atan2(vertices[j + 1][(i + 1) % N_PHI].y, vertices[j + 1][(i + 1) % N_PHI].x) / (2 * PI) + 0.5);
+			uves[n++] = asin(vertices[j + 1][(i + 1) % N_PHI].z) / PI + 0.5;
+
+			uves[n++] = (atan2(vertices[j][i].y, vertices[j][i].x) / (2 * PI) + 0.5);
+			uves[n++] = asin(vertices[j][i].z) / PI + 0.5;
+
+			uves[n++] = (atan2(vertices[j + 1][(i + 1) % N_PHI].y, vertices[j + 1][(i + 1) % N_PHI].x) / (2 * PI) + 0.5);
+			uves[n++] = asin(vertices[j + 1][(i + 1) % N_PHI].z) / PI + 0.5;
+
+			uves[n++] = (atan2(vertices[j][(i + 1) % N_PHI].y, vertices[j][(i + 1) % N_PHI].x) / (2 * PI) + 0.5);
+			uves[n++] = asin(vertices[j][(i + 1) % N_PHI].z) / PI + 0.5;
+
+			if (uves[n - 2] < uves[n - 6]) {
+				uves[n - 8] = 1;
+				uves[n - 4] = 1;
+				uves[n - 2] = 1;
+			}
+		}
+	}
+
 }
 
 void MakeFireboll::add_boll(glm::vec3 position, glm::vec3 direction, Fireboll* res)
@@ -183,7 +176,7 @@ void MakeFireboll::add_boll(glm::vec3 position, glm::vec3 direction, Fireboll* r
 	glm::vec3 x = {c / d, 0., -a / d};
 	d = sqrt(b * b * x .z * x.z + (c * x.x - a * x.z) * (c * x.x - a * x.z) + b * b * x.x * x.x);
 	glm::vec3 y = {b * x.z / d, (c * x.x - a * x.z) / d, -b * x.x / d};
-	//Поворот
+	//ГЏГ®ГўГ®Г°Г®ГІ
 	for (int i = 0; i < boll_copy.size(); i += 3) {
 		float p = boll_copy[i];
 		float q = boll_copy[i + 1];
@@ -193,7 +186,7 @@ void MakeFireboll::add_boll(glm::vec3 position, glm::vec3 direction, Fireboll* r
 		boll_copy[i + 2] = p * x.z + q * y.z + r * z.z;
 	}
 
-	//Смещение
+	//Г‘Г¬ГҐГ№ГҐГ­ГЁГҐ
 	for (int i = 0; i < boll_copy.size(); i += 3) {
 		boll_copy[i] += position.x;
 		boll_copy[i + 1] += position.y;
@@ -202,6 +195,7 @@ void MakeFireboll::add_boll(glm::vec3 position, glm::vec3 direction, Fireboll* r
 
 	res->boll = boll_copy;
 	res->boll_colors = boll_colors;
+	res->uves = uves;
 	res->direction = direction;
 	res->radius = 1.0 / scale;
 	res->centre = position;

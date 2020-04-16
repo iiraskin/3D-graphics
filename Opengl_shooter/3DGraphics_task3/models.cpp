@@ -137,22 +137,22 @@ MakeFireboll::MakeFireboll()
 	for (int j = 0; j < N_PSI - 1; ++j) {
 		for (int i = 0; i < N_PHI; ++i) {
 			uves[n++] = (atan2(vertices[j][i].y, vertices[j][i].x) / (2 * PI) + 0.5);
-			uves[n++] = asin(vertices[j][i].z) / PI + 0.5;
+			uves[n++] = - asin(vertices[j][i].z) / PI + 0.5;
 
 			uves[n++] = (atan2(vertices[j + 1][i].y, vertices[j + 1][i].x) / (2 * PI) + 0.5);
-			uves[n++] = asin(vertices[j + 1][i].z) / PI + 0.5;
+			uves[n++] = - asin(vertices[j + 1][i].z) / PI + 0.5;
 
 			uves[n++] = (atan2(vertices[j + 1][(i + 1) % N_PHI].y, vertices[j + 1][(i + 1) % N_PHI].x) / (2 * PI) + 0.5);
-			uves[n++] = asin(vertices[j + 1][(i + 1) % N_PHI].z) / PI + 0.5;
+			uves[n++] = - asin(vertices[j + 1][(i + 1) % N_PHI].z) / PI + 0.5;
 
 			uves[n++] = (atan2(vertices[j][i].y, vertices[j][i].x) / (2 * PI) + 0.5);
-			uves[n++] = asin(vertices[j][i].z) / PI + 0.5;
+			uves[n++] = - asin(vertices[j][i].z) / PI + 0.5;
 
 			uves[n++] = (atan2(vertices[j + 1][(i + 1) % N_PHI].y, vertices[j + 1][(i + 1) % N_PHI].x) / (2 * PI) + 0.5);
-			uves[n++] = asin(vertices[j + 1][(i + 1) % N_PHI].z) / PI + 0.5;
+			uves[n++] = - asin(vertices[j + 1][(i + 1) % N_PHI].z) / PI + 0.5;
 
 			uves[n++] = (atan2(vertices[j][(i + 1) % N_PHI].y, vertices[j][(i + 1) % N_PHI].x) / (2 * PI) + 0.5);
-			uves[n++] = asin(vertices[j][(i + 1) % N_PHI].z) / PI + 0.5;
+			uves[n++] = - asin(vertices[j][(i + 1) % N_PHI].z) / PI + 0.5;
 
 			if (uves[n - 2] < uves[n - 6]) {
 				uves[n - 8] = 1;

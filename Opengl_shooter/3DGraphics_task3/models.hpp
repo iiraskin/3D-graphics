@@ -21,6 +21,7 @@ const double PI = 3.141592653589793238463;
 struct Tree {
 	std::vector<GLfloat> tree;
 	std::vector<GLfloat> tree_colors;
+	std::vector<GLfloat> uves;
 };
 
 struct Spruce : public Tree {
@@ -48,6 +49,7 @@ struct Fireboll {
 
 	std::vector<GLfloat> boll;
 	std::vector<GLfloat> boll_colors;
+	std::vector<GLfloat> uves;
 };
 
 void make_tree(Tree* res, const std::vector<GLfloat>& tree, const std::vector<GLfloat>& tree_colors,
@@ -127,7 +129,7 @@ private:
 			 0.4f,-0.4f, 0.4f,
 			-0.4f,-0.4f,-0.4f,
 			 0.4f,-0.4f,-0.4f,
-			 // Ñòâîë
+			 // Ã‘Ã²Ã¢Ã®Ã«
 			-0.15f,-0.8f,-0.15f,
 			-0.15f,-0.4f,-0.15f,
 			-0.15f,-0.4f, 0.15f,
@@ -281,6 +283,120 @@ private:
 		0.2f,  0.2f,  0.0f,
 		0.2f,  0.2f,  0.0f
 	};
+	
+	const std::vector<GLfloat> uves = {
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f
+	};
 
 public:
 	void add_tree(Spruce* res);
@@ -329,7 +445,7 @@ private:
 		0.15f,-0.8f, 0.15f,
 	   -0.15f,-0.8f,-0.15f,
 		0.15f,-0.8f,-0.15f,
-		// Êîëüöà
+		// ÃŠÃ®Ã«Ã¼Ã¶Ã 
 		// 1
 		0.15f,-0.3105f, 0.15f,
 	   -0.15f,-0.5105f,-0.15f,
@@ -421,7 +537,7 @@ private:
 		0.2f,  0.2f,  0.0f,
 		0.2f,  0.2f,  0.0f,
 		0.2f,  0.2f,  0.0f,
-		// Êîëüöà
+		// ÃŠÃ®Ã«Ã¼Ã¶Ã 
 		// 1
 		0.6f,  0.3f,  0.0f,
 		0.6f,  0.3f,  0.0f,
@@ -471,6 +587,96 @@ private:
 		0.8f,  0.8f,  0.0f,
 		0.8f,  0.8f,  0.0f
 	};
+	
+	const std::vector<GLfloat> uves = {
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f
+	};
 
 public:
 	void add_tree(Stump* res, const Spruce& spruce);
@@ -483,6 +689,7 @@ class MakeFireboll {
 private:
 	std::vector<GLfloat> boll;
 	std::vector<GLfloat> boll_colors;
+	std::vector<GLfloat> uves;
 
 	const int scale = 20;
 

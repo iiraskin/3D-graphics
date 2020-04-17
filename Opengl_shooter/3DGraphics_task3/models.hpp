@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include<vector>
 #include <random>
@@ -32,6 +32,8 @@ struct Spruce : public Tree {
 	double bias_y;
 	double bias_z;
 
+	double last_shoot = 0; // Когда в последний раз стреляла.
+
 	glm::vec3 centre;
 	double radius;
 };
@@ -45,6 +47,18 @@ struct Fireboll {
 	double radius;
 	glm::vec3 direction;
 	float speed = 0.5f;
+	double birth;
+
+	std::vector<GLfloat> boll;
+	std::vector<GLfloat> boll_colors;
+	std::vector<GLfloat> uves;
+};
+
+struct SpruceFireboll {
+	glm::vec3 centre;
+	double radius;
+	glm::vec3 direction;
+	float speed = 1.0f;
 	double birth;
 
 	std::vector<GLfloat> boll;
@@ -691,10 +705,21 @@ private:
 	std::vector<GLfloat> boll_colors;
 	std::vector<GLfloat> uves;
 
-	const int scale = 20;
-
 public:
 	MakeFireboll();
-	void add_boll(glm::vec3 position, glm::vec3 direction, Fireboll* res);
+	void add_boll(glm::vec3 position, glm::vec3 direction, int scale, Fireboll* res);
 	void find_position(Fireboll* res);
+};
+
+class MakeSpruceFireboll {
+private:
+	std::vector<GLfloat> boll;
+	std::vector<GLfloat> boll_colors;
+
+	const int scale = 40;
+
+public:
+	MakeSpruceFireboll();
+	void add_boll(glm::vec3 position, glm::vec3 direction, SpruceFireboll* res);
+	void find_position(SpruceFireboll* res);
 };

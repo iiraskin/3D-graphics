@@ -1,4 +1,4 @@
-// Include standard headers
+﻿// Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <random>
@@ -11,7 +11,6 @@
 #include <GLFW/glfw3.h>
 GLFWwindow* window;
 
-#include <GL/glut.h> 
 
 // Include GLM
 #include <glm/glm.hpp>
@@ -20,8 +19,8 @@ using namespace glm;
 
 #include <common/shader.hpp>
 #include <common/controls.hpp>
-#include "common/text2D.hpp" 
-#include "common/texture.hpp" 
+#include <common/text2D.hpp>
+#include <common/texture.hpp>
 
 #include "models.hpp"
 
@@ -43,7 +42,7 @@ int main( void )
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768, "Spruce", NULL, NULL);
+	window = glfwCreateWindow( 1024, 768, "Spruce shooter", NULL, NULL);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -95,31 +94,46 @@ int main( void )
 	MakeSpruce tree_maker;
 	MakeFireboll fireboll_maker;
 	MakeStump stump_maker;
+	MakeSpruceFireboll tree_boll_maker;
 
 	std::vector<Spruce> trees;
 	std::vector<Stump> stumps;
 	std::vector<Fireboll> firebolls;
+	std::vector<SpruceFireboll> tree_bolls;
 
-	// Âîçìîæíûå öâåòà ôîíà
+	// Возможные цвета фона
 	std::vector<glm::vec4> backgrounds = { {0.7f, 1.0f, 0.7f, 0.0f},
 										   {0.7f, 0.7f, 1.0f, 0.0f},
 										   {1.0f, 0.7f, 0.7f, 0.0f},
 										   {0.0f, 0.0f, 0.0f, 0.0f},
 										   {1.0f, 1.0f, 1.0f, 0.0f} };
 
-	double interval = dis(gen) / 10000.0 * 10 + 5; // Çàäåðæêà äî ïîÿâëåíèÿ ïåðâîãî äåðåâà
+	int boll_scale = 20; // Радиус фаербола 1/scale
+	double interval = dis(gen) / 10000.0 * 5 + 3; // Задержка до появления первого дерева
 	double start = glfwGetTime();
 	int old_mause_state = GLFW_RELEASE;
+	int old_ball_size_plus_state = GLFW_RELEASE;
+	int old_ball_size_minus_state = GLFW_RELEASE;
+	int old_defence_state = GLFW_RELEASE;
 	int old_background_state = GLFW_RELEASE;
 	int backgorund_id = 0;
 	glClearColor(backgrounds[backgorund_id][0], backgrounds[backgorund_id][1], backgrounds[backgorund_id][2], backgrounds[backgorund_id][3]);
+	bool defence = false; // Защищаются ли ёлки.
+	double effect_start = 0; // Время начала эффекта для игрока после попадания ёлки.
 
 	//load Texture
 	GLuint Texture = loadBMP_custom("fireearth.bmp");
 	GLuint TextureID = glGetUniformLocation(programID1, "myTextureSampler");
 	
 	do{
-		// Èçìåíåíèå ôîíà ïî íàæàòèþ "B"
+		// Включение/выключение защиты ёлок по нажатию "D"
+		int new_defence_state = glfwGetKey(window, GLFW_KEY_D);
+		if (new_defence_state == GLFW_RELEASE && old_defence_state == GLFW_PRESS) {
+			defence = !defence;
+		}
+		old_defence_state = new_defence_state;
+
+		// Изменение фона по нажатию "B"
 		int new_background_state = glfwGetKey(window, GLFW_KEY_B);
 		if (new_background_state == GLFW_RELEASE && old_background_state == GLFW_PRESS) {
 			backgorund_id = (backgorund_id + 1) % backgrounds.size();
@@ -127,10 +141,22 @@ int main( void )
 		}
 		old_background_state = new_background_state;
 
-		// Óäàëåíèå äåðåâüåâ, â êîòîðûå ïîïàëè ôàéåðáîëû
+		// Изменение размера фаерболов по нажатию "+ или -"
+		int new_ball_size_state = glfwGetKey(window, GLFW_KEY_MINUS);
+		if (new_ball_size_state == GLFW_RELEASE && old_ball_size_minus_state == GLFW_PRESS) {
+			boll_scale = min(boll_scale + 5, 100);
+		}
+		old_ball_size_minus_state = new_ball_size_state;
+		new_ball_size_state = glfwGetKey(window, GLFW_KEY_EQUAL);
+		if (new_ball_size_state == GLFW_RELEASE && old_ball_size_plus_state == GLFW_PRESS) {
+			boll_scale = max(boll_scale - 5, 1);
+		}
+		old_ball_size_plus_state = new_ball_size_state;
+
+		// Удаление деревьев, в которые попали файерболы
 		for (int i = 0; i < firebolls.size(); ++i) {
 			for (int j = 0; j < trees.size(); ++j) {
-				// Ó÷èòûâàåò, ÷òî ôàåðáîë äâèãàåòñÿ
+				// Учитываем, что фаербол двигается
 				double delta_time = glfwGetTime() - firebolls[i].birth;
 				glm::vec3 boll_centre = firebolls[i].centre + firebolls[i].direction * (float)delta_time * firebolls[i].speed;
 
@@ -138,13 +164,13 @@ int main( void )
 									  	    std::pow(boll_centre.y - trees[j].centre.y, 2) +
 										    std::pow(boll_centre.z - trees[j].centre.z, 2));
 				if (distance < firebolls[i].radius + trees[j].radius) {
-					// Ñîçäàíèå ïíÿ
+					// Создание пня
 					stumps.resize(stumps.size() + 1);
 					stump_maker.add_tree(&stumps[stumps.size() - 1], trees[j]);
-					// Óäàëåíèå äåðåâà
+					// Удаление дерева
 					std::swap(trees[j], trees[trees.size() - 1]);
 					trees.pop_back();
-					// Óäàëåíèå ôàéåðáîëà
+					// Удаление файербола
 					std::swap(firebolls[i], firebolls[firebolls.size() - 1]);
 					firebolls.pop_back();
 					break;
@@ -152,7 +178,7 @@ int main( void )
 			}
 		}
 		
-		// Óäàëåíèå ñòàðûõ ïíåé (ñðîê æèçíè ïíÿ - 2 ìèíóòû)
+		// Удаление старых пней (срок жизни пня - 2 минуты)
 		for (int i = 0; i < stumps.size(); ++i) {
 			double cur_time = glfwGetTime();
 			if (cur_time - stumps[i].birth > 120) {
@@ -160,16 +186,58 @@ int main( void )
 				stumps.pop_back();
 			}
 		}
-		
-		// Äîáàâëåíèå íîâûõ ôàéåðáîëîâ
+
+		// Добавление новых файерболов
 		int new_mause_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 		if (new_mause_state == GLFW_RELEASE && old_mause_state == GLFW_PRESS) {
 			firebolls.resize(firebolls.size() + 1);
-			fireboll_maker.add_boll(getPosition(), getDirection(), &firebolls[firebolls.size() - 1]);
+			fireboll_maker.add_boll(getPosition(), getDirection(), boll_scale, &firebolls[firebolls.size() - 1]);
 		}
 		old_mause_state = new_mause_state;
 
-		// Äîáàâëåíèå íîâûõ äåðåâüåâ.
+		// Добавление новых ёлочных снарядов
+		if (defence) {
+			for (int i = 0; i < trees.size(); ++i) {
+				glm::vec3 player_position = getPosition();
+				double distance = std::sqrt(std::pow(player_position.x - trees[i].centre.x, 2) +
+											std::pow(player_position.y - trees[i].centre.y, 2) +
+											std::pow(player_position.z - trees[i].centre.z, 2));
+				double shoot_time = glfwGetTime();
+				if (distance < trees[i].radius * 100 && shoot_time - trees[i].last_shoot >= 5) {
+					tree_bolls.resize(tree_bolls.size() + 1);
+					tree_boll_maker.add_boll(trees[i].centre, player_position - trees[i].centre, &tree_bolls[tree_bolls.size() - 1]);
+					trees[i].last_shoot = glfwGetTime();
+				}
+			}
+		}
+
+		// Удаление попавших ёлочных снарядов
+		for (int i = 0; i < tree_bolls.size(); ++i) {
+			// Учитываем, что фаербол двигается
+			double delta_time = glfwGetTime() - tree_bolls[i].birth;
+			glm::vec3 boll_centre = tree_bolls[i].centre + tree_bolls[i].direction * (float)delta_time * tree_bolls[i].speed;
+			glm::vec3 player_position = getPosition();
+			double distance = std::sqrt(std::pow(boll_centre.x - player_position.x, 2) +
+			std::pow(boll_centre.y - player_position.y, 2) +
+			std::pow(boll_centre.z - player_position.z, 2));
+			if (distance < tree_bolls[i].radius) {
+				// Удаление файербола
+				std::swap(tree_bolls[i], tree_bolls[tree_bolls.size() - 1]);
+				tree_bolls.pop_back();
+				break;
+				// Эффект для игрока.
+				effect_start = glfwGetTime();
+			}
+		}
+
+		// Действие эффекта попадания в игрока (в течении 5 секунд)
+		if (glfwGetTime() - effect_start < 5) {
+			/*
+			Лена, напиши, пожалуйста, что здесь происходит.
+			*/
+		}
+
+		// Добавление новых деревьев
 		double end = glfwGetTime();
 		if (end - start > interval) {
 			trees.resize(trees.size() + 1);
@@ -182,15 +250,24 @@ int main( void )
 		std::vector<GLfloat> g_color_buffer_data = {};
 		std::vector<GLfloat> g_uv_buffer_data = {};
 
-		// Äîáàâëåíèå âñåõ îáúåêòîâ â áóôåðû.
+		// Добавление всех объектов в буферы
 
 		for (Fireboll fireboll : firebolls) {
-			// Íóæíî ó÷åñòü, ÷òî ôàåðáîëû äâèãàþòñÿ.
+			// Нужно учесть, что фаерболы двигаются
 			Fireboll fireboll_copy = fireboll;
 			fireboll_maker.find_position(&fireboll_copy);
 			g_vertex_buffer_data.insert(g_vertex_buffer_data.end(), fireboll_copy.boll.begin(), fireboll_copy.boll.end());
 			g_color_buffer_data.insert(g_color_buffer_data.end(), fireboll_copy.boll_colors.begin(), fireboll_copy.boll_colors.end());
 			g_uv_buffer_data.insert(g_uv_buffer_data.end(), fireboll_copy.uves.begin(), fireboll_copy.uves.end());
+		}
+
+		for (SpruceFireboll tree_boll : tree_bolls) {
+			// Нужно учесть, что фаерболы двигаются
+			SpruceFireboll tree_boll_copy = tree_boll;
+			tree_boll_maker.find_position(&tree_boll_copy);
+			g_vertex_buffer_data.insert(g_vertex_buffer_data.end(), tree_boll_copy.boll.begin(), tree_boll_copy.boll.end());
+			g_color_buffer_data.insert(g_color_buffer_data.end(), tree_boll_copy.boll_colors.begin(), tree_boll_copy.boll_colors.end());
+			g_uv_buffer_data.insert(g_uv_buffer_data.end(), tree_boll_copy.uves.begin(), tree_boll_copy.uves.end());
 		}
 
 		for (Spruce tree : trees) {

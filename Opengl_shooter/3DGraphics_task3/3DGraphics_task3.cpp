@@ -118,6 +118,7 @@ int main( void )
 	int old_ball_size_minus_state = GLFW_RELEASE;
 	int old_defence_state = GLFW_RELEASE;
 	int old_background_state = GLFW_RELEASE;
+	int old_texture_state = GLFW_RELEASE;
 	int backgorund_id = 0;
 	int player_score = 0;
 	
@@ -128,6 +129,42 @@ int main( void )
 	//load Texture
 	GLuint Texture = loadBMP_custom("fireearth.bmp");
 	GLuint TextureID = glGetUniformLocation(programID1, "myTextureSampler");
+	
+	GLuint Texture2 = loadBMP_custom("fireearth2.bmp");
+	GLuint TextureID2 = glGetUniformLocation(programID1, "myTextureSampler");
+
+	GLuint Texture3 = loadBMP_custom("fireearth3.bmp");
+	GLuint TextureID3 = glGetUniformLocation(programID1, "myTextureSampler");
+
+	GLuint Texture4 = loadBMP_custom("fireearth4.bmp");
+	GLuint TextureID4 = glGetUniformLocation(programID1, "myTextureSampler");
+
+	GLuint Texture5 = loadBMP_custom("fireearth5.bmp");
+	GLuint TextureID5 = glGetUniformLocation(programID1, "myTextureSampler");
+
+	GLuint Texture6 = loadBMP_custom("fireearth6.bmp");
+	GLuint TextureID6 = glGetUniformLocation(programID1, "myTextureSampler");
+
+	// текущая текстура
+	GLuint current_texture_num = 0;
+
+	std::vector<GLuint> textures = { 
+		Texture, 
+		Texture2,
+		Texture3,
+		Texture4,
+		Texture5,
+		Texture6,
+	};
+
+	std::vector<GLuint> texture_ids = {
+		TextureID,
+		TextureID2,
+		TextureID3,
+		TextureID4,
+		TextureID5,
+		TextureID6
+	};
 	
 	glUseProgram(programID1);
 
@@ -151,6 +188,14 @@ int main( void )
 			glClearColor(backgrounds[backgorund_id][0], backgrounds[backgorund_id][1], backgrounds[backgorund_id][2], backgrounds[backgorund_id][3]);
 		}
 		old_background_state = new_background_state;
+		
+		// Изменение текстуры по нажатию "T"
+		int new_texture_state = glfwGetKey(window, GLFW_KEY_T);
+		if (new_texture_state == GLFW_RELEASE && old_texture_state == GLFW_PRESS) {
+			current_texture_num += 1;
+			current_texture_num %= textures.size();
+		}
+		old_texture_state = new_texture_state;
 
 		// Изменение размера фаерболов по нажатию "+ или -"
 		int new_ball_size_state = glfwGetKey(window, GLFW_KEY_MINUS);
@@ -343,8 +388,8 @@ int main( void )
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Texture);
-		glUniform1i(TextureID, 0);
+		glBindTexture(GL_TEXTURE_2D, textures[current_texture_num]);
+		glUniform1i(texture_ids[current_texture_num], 0);
 
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);

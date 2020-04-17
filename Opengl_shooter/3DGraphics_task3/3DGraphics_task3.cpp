@@ -95,11 +95,13 @@ int main( void )
 	MakeFireboll fireboll_maker;
 	MakeStump stump_maker;
 	MakeSpruceFireboll tree_boll_maker;
+	MakeForeground foreground_maker;
 
 	std::vector<Spruce> trees;
 	std::vector<Stump> stumps;
 	std::vector<Fireboll> firebolls;
 	std::vector<SpruceFireboll> tree_bolls;
+	std::vector<Foreground> foreground;
 
 	// Возможные цвета фона
 	std::vector<glm::vec4> backgrounds = { {0.7f, 1.0f, 0.7f, 0.0f},
@@ -117,13 +119,22 @@ int main( void )
 	int old_defence_state = GLFW_RELEASE;
 	int old_background_state = GLFW_RELEASE;
 	int backgorund_id = 0;
+	int player_score = 0;
+	
 	glClearColor(backgrounds[backgorund_id][0], backgrounds[backgorund_id][1], backgrounds[backgorund_id][2], backgrounds[backgorund_id][3]);
 	bool defence = false; // Защищаются ли ёлки.
-	double effect_start = 0; // Время начала эффекта для игрока после попадания ёлки.
+	double effect_start = -10; // Время начала эффекта для игрока после попадания ёлки.
 
 	//load Texture
 	GLuint Texture = loadBMP_custom("fireearth.bmp");
 	GLuint TextureID = glGetUniformLocation(programID1, "myTextureSampler");
+	
+	glUseProgram(programID1);
+
+	// Initialize our little text library with the Holstein font
+	initText2D("Holstein.DDS");
+	
+	int alive = 1; 
 	
 	do{
 		// Включение/выключение защиты ёлок по нажатию "D"
@@ -173,6 +184,7 @@ int main( void )
 					// Удаление файербола
 					std::swap(firebolls[i], firebolls[firebolls.size() - 1]);
 					firebolls.pop_back();
+					player_score += 1;
 					break;
 				}
 			}
@@ -188,7 +200,7 @@ int main( void )
 		}
 
 		// Добавление новых файерболов
-		int new_mause_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+		int new_mause_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT && alive == 1);
 		if (new_mause_state == GLFW_RELEASE && old_mause_state == GLFW_PRESS) {
 			firebolls.resize(firebolls.size() + 1);
 			fireboll_maker.add_boll(getPosition(), getDirection(), boll_scale, &firebolls[firebolls.size() - 1]);
@@ -196,7 +208,7 @@ int main( void )
 		old_mause_state = new_mause_state;
 
 		// Добавление новых ёлочных снарядов
-		if (defence) {
+		if (defence && alive == 1) {
 			for (int i = 0; i < trees.size(); ++i) {
 				glm::vec3 player_position = getPosition();
 				double distance = std::sqrt(std::pow(player_position.x - trees[i].centre.x, 2) +
@@ -230,11 +242,26 @@ int main( void )
 			}
 		}
 
-		// Действие эффекта попадания в игрока (в течении 5 секунд)
-		if (glfwGetTime() - effect_start < 5) {
-			/*
-			Лена, напиши, пожалуйста, что здесь происходит.
-			*/
+		// Действие эффекта попадания в игрока (в течении 5 секунд : 1я половина секунды - бездействие)
+		if (glfwGetTime() - effect_start < 0.5 && alive == 1) {
+			alive = 0;
+			foreground.resize(foreground.size() + 1);
+			foreground_maker.add_foreground(getPosition(), getDirection(), &foreground[foreground.size() - 1]);
+		}
+		
+		if (glfwGetTime() - effect_start >= 0.5 && glfwGetTime() - effect_start < 5) {
+			for (int i = 0; i < foreground.size(); ++i) {
+				std::swap(foreground[i], foreground[foreground.size() - 1]);
+				foreground.pop_back();
+			}
+
+			glColorMask(GL_TRUE, GL_FALSE, GL_FALSE, GL_TRUE);
+			alive = 1;
+		}
+
+		// Возвращение в нормальный режим
+		if (glfwGetTime() - effect_start >= 5) {
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		}
 
 		// Добавление новых деревьев
@@ -280,6 +307,12 @@ int main( void )
 			g_vertex_buffer_data.insert(g_vertex_buffer_data.end(), stump.tree.begin(), stump.tree.end());
 			g_color_buffer_data.insert(g_color_buffer_data.end(), stump.tree_colors.begin(), stump.tree_colors.end());
 			g_uv_buffer_data.insert(g_uv_buffer_data.end(), stump.uves.begin(), stump.uves.end());
+		}
+		
+		for (Foreground f : foreground) {
+			g_vertex_buffer_data.insert(g_vertex_buffer_data.end(), f.foreground.begin(), f.foreground.end());
+			g_color_buffer_data.insert(g_color_buffer_data.end(), f.foreground_color.begin(), f.foreground_color.end());
+			g_uv_buffer_data.insert(g_uv_buffer_data.end(), f.uves.begin(), f.uves.end());
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -355,10 +388,21 @@ int main( void )
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
+		
+		char text[256];
+		sprintf(text, "SCORE:%d ", player_score);
+		printText2D(text, 480, 550, 36);
+
+		char text2[256];
+		sprintf(text2, "YOU LOSE");
+		if (alive == 0) {
+			printText2D(text2, 100, 300, 70);
+		}
 
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		cleanupText2D;
 
 	} // Check if the ESC key was pressed or the window was closed
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&

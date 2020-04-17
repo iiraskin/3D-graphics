@@ -723,3 +723,21 @@ public:
 	void add_boll(glm::vec3 position, glm::vec3 direction, SpruceFireboll* res);
 	void find_position(SpruceFireboll* res);
 };
+
+
+struct Foreground {
+	std::vector<GLfloat> foreground;
+	std::vector<GLfloat> foreground_color;
+	std::vector<GLfloat> uves;
+};
+
+
+class MakeForeground {
+private:
+	std::vector<GLfloat> foreground;
+	std::vector<GLfloat> foreground_color;
+	std::vector<GLfloat> uves;
+
+public:
+	void add_foreground(glm::vec3 position, glm::vec3 direction, Foreground* res);
+};

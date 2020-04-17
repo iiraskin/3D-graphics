@@ -387,3 +387,52 @@ void MakeSpruceFireboll::find_position(SpruceFireboll* res)
 	}
 	res->centre += res->direction * (float)delta_time * res->speed;
 }
+
+
+void MakeForeground::add_foreground(glm::vec3 position, glm::vec3 direction, Foreground* res)
+{
+	float a = direction.x;
+	float b = direction.y;
+	float c = direction.z;
+
+	float xx = position.x;
+	float yy = position.y;
+	float zz = position.z;
+
+	float d = -a * xx - b * yy - c * zz;
+
+	// вершины квадрата
+	std::vector<GLfloat> foreground = {
+		xx - 1000.0f + 1.1f * a, yy - 1000.0f + 1.1f * b, zz + (1000.0f * a + 1000.0f * b) / c + 1.1f * c,
+		xx + 1000.0f + 1.1f * a, yy + 1000.0f + 1.1f * b, zz - (1000.0f * a + 1000.0f * b) / c + 1.1f * c,
+		xx - 1000.0f + 1.1f * a, yy + 1000.0f + 1.1f * b, zz + (1000.0f * a - 1000.0f * b) / c + 1.1f * c,
+
+		xx - 1000.0f + 1.1f * a, yy - 1000.0f + 1.1f * b, zz + (1000.0f * a + 1000.0f * b) / c + 1.1f * c,
+		xx + 1000.0f + 1.1f * a, yy + 1000.0f + 1.1f * b, zz - (1000.0f * a + 1000.0f * b) / c + 1.1f * c,
+		xx + 1000.0f + 1.1f * a, yy - 1000.0f + 1.1f * b, zz + (- 1000.0f * a + 1000.0f * b) / c + 1.1f * c,
+	};
+
+	std::vector<GLfloat> foreground_color = {
+		0.2f, 0.59f, 0.21f,
+		0.2f, 0.59f, 0.21f,
+		0.2f, 0.59f, 0.21f,
+
+		0.2f, 0.59f, 0.21f,
+		0.2f, 0.59f, 0.21f,
+		0.2f, 0.59f, 0.21f,
+	};
+
+	std::vector<GLfloat> uves = {
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f
+	};
+
+	res->foreground = foreground;
+	res->foreground_color = foreground_color;
+	res->uves = uves;
+}

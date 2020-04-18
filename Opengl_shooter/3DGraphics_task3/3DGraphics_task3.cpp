@@ -245,8 +245,8 @@ int main( void )
 		}
 
 		// Добавление новых файерболов
-		int new_mause_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT && alive == 1);
-		if (new_mause_state == GLFW_RELEASE && old_mause_state == GLFW_PRESS) {
+		int new_mause_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+		if (new_mause_state == GLFW_RELEASE && old_mause_state == GLFW_PRESS && alive == 1) {
 			firebolls.resize(firebolls.size() + 1);
 			fireboll_maker.add_boll(getPosition(), getDirection(), boll_scale, &firebolls[firebolls.size() - 1]);
 		}
@@ -281,9 +281,9 @@ int main( void )
 				// Удаление файербола
 				std::swap(tree_bolls[i], tree_bolls[tree_bolls.size() - 1]);
 				tree_bolls.pop_back();
-				break;
 				// Эффект для игрока.
 				effect_start = glfwGetTime();
+				break;
 			}
 		}
 
